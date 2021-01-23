@@ -1,2 +1,2 @@
-# algorandescrow
-An escrow contract on Algorand blockchain.
+# algorandEscrow
+Enables trustless transaction between a buyer and a seller
