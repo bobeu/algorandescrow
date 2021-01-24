@@ -3,7 +3,6 @@
 
 import logging
 from ddv_global import client, TRANSACTIONS, asset
-from test_args import default
 from algosdk import account, transaction
 from algosdk.future.transaction import AssetTransferTxn
 from ddv_waitforconfirmation import wait_for_confirmation
@@ -11,11 +10,13 @@ from telegram.ext import ConversationHandler
 import base64
 import pickle
 import os
+from dotenv import load_dotenv
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
 )
 
+load_dotenv()
 logger = logging.getLogger(__name__)
 ex_file = tuple()
 
@@ -47,6 +48,7 @@ def init_atomic(update, context):
     Can only trade an Algorand Asset for ALGO (Algorand's native currency)
     :return: Boolean - True
     """
+    default = os.getenv('DEFAULT')
     buyer = context.user_data['buyer_address']
     amount = context.user_data['amount_in_algo']
     amount *= 1000000

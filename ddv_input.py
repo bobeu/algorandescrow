@@ -34,9 +34,9 @@ def get_args(update, context) -> int:
         markup = reply_keyboard(update, context, verify_keyboard)
     elif text == 'Approve_trade' or text == '/Approve_trade':
         markup = reply_keyboard(update, context, approve_trade)
-    elif text == 'Get_test_ASA' or text == '/Get_test_ASA':
+    elif text == 'Get_free_asset' or text == '/Get_free_asset':
         markup = reply_keyboard(update, context, dispense_keyboard)
-        update.message.reply_text("Skip the signing key if the designated account already\n "
+        update.message.reply_text("Reply 'None' to the Signing key if the designated account already\n "
                                   "has asset added to its balance")
     elif text == 'Import_Secret_key' or text == '/Import_Secret_key':
         markup = reply_keyboard(update, context, pk_keyboard)
@@ -132,7 +132,7 @@ def preview_info_2(update, context) -> int:
             user_d[cat] = text
             popup(update, context, keyboard, user_d)
 
-        elif cat == 'Signing_key' and len(text) > 58:
+        elif cat == 'Signing_key':
             user_d[cat] = text
             popup(
                 update,

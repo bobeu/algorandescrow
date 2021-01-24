@@ -6,13 +6,17 @@ from ddv_waitforconfirmation import wait_for_confirmation
 from algosdk.future.transaction import AssetTransferTxn
 from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton
 from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
-from test_args import mn, test_dispenser
 from algosdk import account, mnemonic, transaction
 import logging
 import time
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 user_d = {}
 dispensed = tuple()
+test_dispenser = os.getenv('DEFAULT2_ACCOUNT')
+mn = os.getenv('DEFAULT2_MNEMONIC')
 
 
 def query_balance(update, context):
@@ -53,6 +57,8 @@ def get_test_account(update, context):
     :param context:
     :return: 1). An Algorand address, 2). A mnemonic seed phrase
     """
+    global mn
+
     update.message.reply_text("Swift!\nYour keys are ready: \n")
     try:
         sk, pk = account.generate_account()
@@ -157,6 +163,8 @@ def dispense(update, context):
     :return:
     """
     global dispensed
+    global test_dispenser
+
     to = context.user_data['address']
     sk = context.user_data['Signing_key']
     params = client.suggested_params()
@@ -190,6 +198,8 @@ def dispense(update, context):
         # Submit transaction to the network
         tx_id = client.send_transaction(signed_txn)
         wait_for_confirmation(update, context, client, tx_id)
+        update.message.reply_text("Yummy! I just sent you 200 DMT2...\nCheck the explorer for txn info.\n"
+                                  "" 'Hash: ' f'{tx_id}' 'Explorer: ''https://algoexplorer.io')
         dispensed = dispensed + (to,)
         logging.info(
             "...##Asset Transfer... \nReceiving account: {}.\nOperation: {}.\nTxn Hash: {}"

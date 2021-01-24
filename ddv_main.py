@@ -112,7 +112,7 @@ def main():
             CommandHandler('Set_up_a_trade', get_args),
             CommandHandler('Verify_transaction', get_args),
             CommandHandler('Approve_trade', get_args),
-            CommandHandler('Get_test_ASA', get_args),
+            CommandHandler('Get_free_asset', get_args),
             CommandHandler('Import_Secret_key', get_args),
             CommandHandler('Check_balance', get_args)
         ],

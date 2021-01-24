@@ -8,9 +8,7 @@ test_buyer = "244IND3CFIWL54G5VANIW6YG6F4SUXAWL4SFAFA577QTLRBIFZEFQ2SDBQ"
 buyerkey = "m1n1mfd9GgvjyieLsHO0VsEAXJPTZH8j+NgERPwpcxfXOIaPYiosvvDdqBqLewbxeSpcFl8kUBQd/+E1xCguSA=="
 sellerkey = mnemonic.to_private_key(mn)
 sellerPkey = "qDdc1uTERtIYy2soFzVOkkFGorn+b0OBP92IqH7Jpoo4JsJFOXZ1T+dL+RWD5PVsS5cT/bt49XU1tUi/M9ogOA=="
-asset_id = 13251912
 test_seller = mnemonic.to_public_key(mn)
-default = "YONEWPHE3FY4326QV2OOYMLJPZT25Q35ZU4XYVA534WUVQWAWB6ZZNNXOM"
 
 
 

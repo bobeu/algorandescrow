@@ -21,7 +21,7 @@ approve_trade = [
 category = [
     ['/Set_up_a_trade', '/Verify_transaction'],
     ['/Approve_trade', '/Import_Secret_key'],
-    ['/Check_balance', '/Get_test_ASA'],
+    ['/Check_balance', '/Get_free_asset'],
     ['/restart']
 ]
 
