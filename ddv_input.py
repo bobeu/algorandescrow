@@ -140,7 +140,7 @@ def preview_info_2(update, context) -> int:
                 dispense_keyboard,
                 user_d,
             )
-        elif cat == 'Mnemonic':
+        elif cat == 'Mnemonic' and len(text.split()) == 25:
             user_d[cat] = text
             popup(update, context, pk_keyboard, user_d)
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from ddv_global import client, reply_keyboard, keyboard, pk_keyboard, asset
+from ddv_global import client, reply_keyboard, keyboard, pk_keyboard
 from ddv_waitforconfirmation import wait_for_confirmation
 from algosdk.future.transaction import AssetTransferTxn
 from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton
@@ -36,11 +36,8 @@ def query_balance(update, context):
                 "Balance on your account: {} Algo."
                 "".format(bal), reply_markup=reply_keyboard(update, context, keyboard))
             for m in account_bal['assets']:
-                for k, v in asset.items():
-                    if m['asset-id'] == v:
-                        name = k
-                        update.message.reply_text(f"Asset balance: {m['amount']} {name}. \nClick /Menu"
-                                                  f" to go the main menu.")
+                update.message.reply_text(f"Asset balance: {m['amount']} 'DMT2'. \nClick /Menu"
+                                          f" to go the main menu.")
             context.user_data.clear()
         else:
             update.message.reply_text("Wrong address_sending supplied.\nNo changes has been made.")
@@ -109,20 +106,20 @@ def getPK(update, context):
     context.user_data.clear()
 
 
-def optin(update, context, recipient, sk, asset_name):
+# First time account to opt in for an ASA asset
+def optin(update, context):
     """
     Checks if user already optin for an ASA,
     subscribes users if condition is false.
-    :param asset_name: Asset to send (str)
-    :param context: Telegram obj
-    :param update: Telegram obj
+    :param update:
+    :param context:
     :param recipient: public key of subscriber
     :param sk: Signature of subscriber
     :return: true if success.
     """
-    global asset
-    print(asset)
-    asset_id = asset["{}".format(asset_name)]
+    sk = context.user_data['Signing_key']
+    recipient = account.address_from_private_key(sk)
+    asset_id = 13251912
     params = client.suggested_params()
     # Check if recipient holding DMT2 asset prior to opt-in
     account_info_pk = client.account_info(recipient)
@@ -131,28 +128,31 @@ def optin(update, context, recipient, sk, asset_name):
         scrutinized_asset = assetinfo['asset-id']
         if asset_id == scrutinized_asset:
             holding = True
-            msg = "This address has opted in for DMT2, ID {}".format(asset[asset_name])
+            msg = "This address has opted in for DMT2, ID {}".format(asset_id)
             logging.info("Message: {}".format(msg))
             logging.captureWarnings(True)
             break
-
     if not holding:
         # Use the AssetTransferTxn class to transfer assets and opt-in
         txn = AssetTransferTxn(sender=recipient,
                                sp=params,
                                receiver=recipient,
                                amt=0,
-                               index=asset[asset_name])
-        send_trxn = txn.sign(sk)
+                               index=asset_id)
+        # Sign the transaction
+        # Firstly, convert mnemonics to private key.
+        # For tutorial purpose, we will focus on using private key
+        # sk = mnemonic.to_private_key(seed)
+        sendTrxn = txn.sign(sk)
 
         # Submit transaction to the network
-        txid = client.send_transaction(send_trxn)
+        txid = client.send_transaction(sendTrxn)
         message = "Transaction was signed with: {}.".format(txid)
         wait = wait_for_confirmation(update, context, client, txid)
         time.sleep(2)
-        has_opted_in = bool(wait is not None)
-        if has_opted_in:
-            update.message.reply_text("Opt in success. Hash: " f'{message}')
+        hasOptedIn = bool(wait is not None)
+        if hasOptedIn:
+            return update.message.reply_text(f"Opt in success\n{message}")
 
 
 def dispense(update, context):
@@ -162,50 +162,51 @@ def dispense(update, context):
     :param context: Same as update
     :return:
     """
+    time.sleep(5)
     global dispensed
+    global mn
     global test_dispenser
 
+    update.message.reply_text('Sending you some test token....')
     to = context.user_data['address']
-    sk = context.user_data['Signing_key']
     params = client.suggested_params()
     params.flat_fee = True
     note = "Thank you for helping in testing this program".encode('utf-8')
-    optin(update, context, to, sk, 'DMT2')
+    optin(update, context)
+    time.sleep(4)
+    # try:
+    trxn = transaction.AssetTransferTxn(
+        test_dispenser,
+        params.fee,
+        params.first,
+        params.last,
+        params.gh,
+        to,
+        amt=200,
+        index=13251912,
+        close_assets_to=None,
+        note=note,
+        gen=params.gen,
+        flat_fee=params.flat_fee,
+        lease=None,
+        rekey_to=None
+    )
 
-    try:
-        index = asset['DMT2']
-        trxn = transaction.AssetTransferTxn(
-            test_dispenser,
-            params.fee,
-            params.first,
-            params.last,
-            params.gh,
-            to,
-            amt=200,
-            index=index,
-            close_assets_to=None,
-            note=note,
-            gen=params.gen,
-            flat_fee=params.flat_fee,
-            lease=None,
-            rekey_to=None
-        )
+    # Sign the transaction
+    sk = mnemonic.to_private_key(mn)
+    signed_txn = trxn.sign(sk)
 
-        # Sign the transaction
-        sk = mnemonic.to_private_key(mn)
-        signed_txn = trxn.sign(sk)
+    # Submit transaction to the network
+    tx_id = client.send_transaction(signed_txn)
+    wait_for_confirmation(update, context, client, tx_id)
+    update.message.reply_text("Yummy! I just sent you 200 DMT2...\nCheck the explorer for txn info.\n"
+                              "" 'Hash: ' f'{tx_id}' 'Explorer: ''https://algoexplorer.io')
+    dispensed = dispensed + (to,)
+    logging.info(
+        "...##Asset Transfer... \nReceiving account: {}.\nOperation: {}.\nTxn Hash: {}"
+        .format(to, dispense.__name__, tx_id))
 
-        # Submit transaction to the network
-        tx_id = client.send_transaction(signed_txn)
-        wait_for_confirmation(update, context, client, tx_id)
-        update.message.reply_text("Yummy! I just sent you 200 DMT2...\nCheck the explorer for txn info.\n"
-                                  "" 'Hash: ' f'{tx_id}' 'Explorer: ''https://algoexplorer.io')
-        dispensed = dispensed + (to,)
-        logging.info(
-            "...##Asset Transfer... \nReceiving account: {}.\nOperation: {}.\nTxn Hash: {}"
-            .format(to, dispense.__name__, tx_id))
-
-        update.message.reply_text("Successful! \nTransaction hash: {}".format(tx_id))
-        context.user_data.clear()
-    except Exception as err:
-        return err
+    update.message.reply_text("Successful! \nTransaction hash: {}".format(tx_id))
+    context.user_data.clear()
+    # except Exception as err:
+    #     return err

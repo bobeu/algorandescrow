@@ -129,6 +129,7 @@ def main():
                 CommandHandler('dispense', dispense),
                 CommandHandler('Verify', verify_txn),
                 CommandHandler('Approve', complete_trade),
+                CommandHandler('Cancel', cancel)
 
             ],
 
@@ -158,7 +159,6 @@ def main():
     dp.add_handler(MessageHandler(Filters.regex('^(start|hey|hi|.|,)$'), f))
     dp.add_handler(CommandHandler('restart', start))
     dp.add_handler(CommandHandler('start', start))
-    dp.add_handler(CommandHandler('restart', start))
     dp.add_handler(CommandHandler('Cancel', cancel))
     dp.add_handler(CommandHandler('Help', help_command))
     dp.add_handler(CommandHandler('Menu', menu))

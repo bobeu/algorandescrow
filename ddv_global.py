@@ -5,7 +5,6 @@ from ddev_client import connect
 from telegram import ReplyKeyboardMarkup
 
 client = connect()
-asset = {"DMT2": 13251912}
 
 sell_asset = [
     ['signing_key', 'buyer_address'],
@@ -15,36 +14,35 @@ sell_asset = [
 
 approve_trade = [
     ['Authorization_key'],
-    ['/Approve', '/Menu'],
+    ['/Approve', '/Menu', '/Cancel'],
 ]
 
 category = [
-    ['/Set_up_a_trade', '/Verify_transaction'],
-    ['/Approve_trade', '/Import_Secret_key'],
-    ['/Check_balance', '/Get_free_asset'],
-    ['/restart']
+    ['/Get_test_account', '/Set_up_a_trade', '/Verify_transaction'],
+    ['/Approve_trade', '/Import_Secret_key', '/Get_free_asset'],
+    ['/Check_balance', '/restart']
 ]
 
 verify_keyboard = [
     ['Address'],
-    ['/Verify', '/Menu']
+    ['/Verify', '/Menu', '/Cancel']
 ]
 
 
 keyboard = [
     ['public_key'],
-    ['/getBal', '/Menu']
+    ['/getBal', '/Menu', '/Cancel']
 ]
 
 pk_keyboard = [
     ['Mnemonic'],
     [''],
-    ['/getPK', '/Menu']
+    ['/getPK', '/Menu', '/Cancel']
 ]
 
 dispense_keyboard = [
     ['address', 'Signing_key'],
-    ['/dispense', '/Menu']
+    ['/dispense', '/Menu', '/Cancel']
 ]
 
 
