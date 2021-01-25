@@ -36,8 +36,7 @@ def query_balance(update, context):
                 "Balance on your account: {} Algo."
                 "".format(bal), reply_markup=reply_keyboard(update, context, keyboard))
             for m in account_bal['assets']:
-                update.message.reply_text(f"Asset balance: {m['amount']} 'DMT2'. \nClick /Menu"
-                                          f" to go the main menu.")
+                update.message.reply_text("Asset balance: {} 'DMT2'. \nClick /Menu to go the main menu.".format(m['amount']))
             context.user_data.clear()
         else:
             update.message.reply_text("Wrong address_sending supplied.\nNo changes has been made.")
@@ -118,7 +117,7 @@ def optin(update, context):
     :return: true if success.
     """
     sk = context.user_data['Signing_key']
-    recipient = account.address_from_private_key(sk)
+    recipient = context.user_data['address']
     asset_id = 13251912
     params = client.suggested_params()
     # Check if recipient holding DMT2 asset prior to opt-in
@@ -152,7 +151,7 @@ def optin(update, context):
         time.sleep(2)
         hasOptedIn = bool(wait is not None)
         if hasOptedIn:
-            return update.message.reply_text(f"Opt in success\n{message}")
+            return update.message.reply_text("Opt in success\n{}".format(message))
 
 
 def dispense(update, context):

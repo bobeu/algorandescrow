@@ -74,7 +74,7 @@ def cancel(update, context):
     """
     context.user_data.clear()
     update.message.reply_text(
-        f"Your message is not recognized!\nSession terminated.", reply_markup=reply_keyboard(update, context, category)
+        "Your message is not recognized!\nSession terminated.", reply_markup=reply_keyboard(update, context, category)
     )
     return -2
 
