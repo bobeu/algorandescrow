@@ -56,38 +56,36 @@ def init_atomic(update, context):
     sk = context.user_data['signing_key']
     qty = context.user_data['quantity_in_ASA']
     global ex_file
+    if asset_name in asset:
+        ex_file = ex_file + (buyer,)
+        sell_addr = account.address_from_private_key(sk)
+        update.message.reply_text('Setting up trade between: \n' 'Seller: 'f'{sell_addr}' ' and \n' 'buyer' f'{buyer}')
+        prms = client.suggested_params()
+        fst = prms.first
+        lst = fst + 1000
+        gn = prms.gen
+        gh = prms.gh
+        fee = 1000
+        flat_fee = 1000000
+        _fee_qty = 1
+        if amount in range(50, 10001):
+            flat_fee = flat_fee
+            amount = round(amount - flat_fee)
+            qty -= _fee_qty
+        elif amount > 10000:
+            flat_fee = 2
+            amount = round(amount - flat_fee)
+            _fee_qty = 3
+            qty -= _fee_qty
+        else:
+            flat_fee = flat_fee
+            _fee_qty = _fee_qty
 
-    try:
-        if asset_name in asset:
-            ex_file = ex_file + (buyer,)
-            sell_addr = account.address_from_private_key(sk)
-            update.message.reply_text('Setting up trade between: \n' 'Seller: 'f'{sell_addr}' ' and \n' 'buyer' f'{buyer}')
-            prms = client.suggested_params()
-            fst = prms.first
-            lst = fst + 1000
-            gn = prms.gen
-            gh = prms.gh
-            fee = 1000
-            flat_fee = 1000000
-            _fee_qty = 1
-            if amount in range(50, 10001):
-                flat_fee = flat_fee
-                amount = round(amount - flat_fee)
-                qty -= _fee_qty
-            elif amount > 10000:
-                flat_fee = 2
-                amount = round(amount - flat_fee)
-                _fee_qty = 3
-                qty -= _fee_qty
-            else:
-                flat_fee = flat_fee
-                _fee_qty = _fee_qty
-
-            string_b = sk.encode('utf-8')
-            d = '%*'.encode('utf-8')
-            b_bytes = base64.b64encode(string_b, d)
-            write_to_file(update, context, buyer, b_bytes)
-
+        string_b = sk.encode('utf-8')
+        d = '%*'.encode('utf-8')
+        b_bytes = base64.b64encode(string_b, d)
+        write_to_file(update, context, buyer, b_bytes)
+        try:
             # Payment transaction
             bd_unsigned = transaction.PaymentTxn(buyer, fee, fst, lst, gh, sell_addr, amount, None, None, gn, False, None)
             # Payment transaction (fee)
@@ -112,10 +110,10 @@ def init_atomic(update, context):
             if wtf:
                 update.message.reply_text('Trade successfully initiated\nBuyer should proceed to approve the trade.')
             context.user_data.clear()
-        else:
-            return update.message.reply_text("Asset not found.")
-    except Exception as e:
-        return e
+        except Exception as e:
+            return e, update.message.reply_text('Something went wrong.')
+    else:
+        return update.message.reply_text("Asset not found.")
     return ConversationHandler.conversation_timeout
 
 
