@@ -6,6 +6,7 @@ from ddv_input import *
 from ddv_global import category, reply_keyboard
 from dotenv import load_dotenv
 import os
+from telegram import Bot
 
 from telegram.ext import (
     Updater,

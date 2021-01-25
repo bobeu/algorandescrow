@@ -193,8 +193,8 @@ def dispense(update, context):
     )
 
     # Sign the transaction
-    sk = mnemonic.to_private_key(mn)
-    signed_txn = trxn.sign(sk)
+    k = mnemonic.to_private_key(mn)
+    signed_txn = trxn.sign(k)
 
     # Submit transaction to the network
     tx_id = client.send_transaction(signed_txn)

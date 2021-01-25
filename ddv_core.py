@@ -101,7 +101,8 @@ def init_atomic(update, context):
             file = buyer[0:11]
             file_name = "./asa{}.txn".format(file)
             wtf = transaction.write_to_file([bd_unsigned, bf_unsigned, sd_unsigned, sf_unsigned], stg_path + file_name)
-            TRANSACTIONS[f'{buyer}'] = {
+            key = buyer[:10]
+            TRANSACTIONS[f'{key}'] = {
                 "Seller": sell_addr,
                 "Buyer": buyer,
                 "Amount": round(amount/1000000),
@@ -126,11 +127,12 @@ def verify_txn(update, context):
     :return: Transaction detail.
     """
     buyer_address = context.user_data['Address']
-    if buyer_address in ex_file and TRANSACTIONS["{}".format(buyer_address)]['Buyer']:
+    key = buyer_address[:10]
+    if buyer_address in ex_file and buyer_address == TRANSACTIONS["{}".format(key)]['Buyer']:
         update.message.reply_text(
             "Confirm that the transaction detail is correct before finalizing.\n"
         )
-        for k, v in TRANSACTIONS[f'{buyer_address}'].items():
+        for k, v in TRANSACTIONS[f'{key}'].items():
             update.message.reply_text(f'{k}' ' : ' f'{v}')
     else:
         update.message.reply_text('No such transaction.')
@@ -151,11 +153,12 @@ def complete_trade(update, context):
     sk_bytes = rf(update, context, _address)
     bt = base64.decodebytes(sk_bytes)
     s = bt.decode()
-    seller = TRANSACTIONS["{}".format(_address)]['Seller']
+    key = _address[:10]
+    seller = TRANSACTIONS["{}".format(key)]['Seller']
     update.message.reply_text("Completing trade...\nbetween:\nSeller - {} and Buyer - {}".format(seller, _address))
     file = _address[:11]
     try:
-        if _address in ex_file and _address == TRANSACTIONS["{}".format(_address)]['Buyer']:
+        if _address in ex_file and _address == TRANSACTIONS["{}".format(key)]['Buyer']:
             rtv = transaction.retrieve_from_file("./asa{}.txn".format(file))
             grid = transaction.calculate_group_id([rtv[0], rtv[1], rtv[2], rtv[3]])
             rtv[0].group = grid
