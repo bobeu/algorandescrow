@@ -65,7 +65,7 @@ def init_atomic(update, context):
         lst = fst + 1000
         gn = prms.gen
         gh = prms.gh
-        fee = 1000
+        fee = prms.fee
         flat_fee = 1000000
         _fee_qty = 1
         if amount in range(50, 10001):
@@ -85,33 +85,31 @@ def init_atomic(update, context):
         d = '%*'.encode('utf-8')
         b_bytes = base64.b64encode(string_b, d)
         write_to_file(update, context, buyer, b_bytes)
-        try:
-            # Payment transaction
-            bd_unsigned = transaction.PaymentTxn(buyer, fee, fst, lst, gh, sell_addr, amount, None, None, gn, False, None)
-            # Payment transaction (fee)
-            bf_unsigned = transaction.PaymentTxn(buyer, fee, fst, lst, gh, default, flat_fee, None, None, gn, False, None)
-            # Asset transfer txn
-            sd_unsigned = AssetTransferTxn(sell_addr, prms, buyer, qty, asset[asset_name], None, None, None, None)
-            # Asset transfer (fee)
-            sf_unsigned = AssetTransferTxn(sell_addr, prms, default, _fee_qty, asset[asset_name], None, None, None, None)
+        # Payment transaction
+        bd_unsigned = transaction.PaymentTxn(buyer, fee, fst, lst, gh, sell_addr, amount, None, None, gn, False, None)
+        # Payment transaction (fee)
+        bf_unsigned = transaction.PaymentTxn(buyer, fee, fst, lst, gh, default, flat_fee, None, None, gn, False, None)
+        # Asset transfer txn
+        sd_unsigned = AssetTransferTxn(sell_addr, prms, buyer, qty, asset[asset_name], None, None, None, None)
+        # Asset transfer (fee)
+        sf_unsigned = AssetTransferTxn(sell_addr, prms, default, _fee_qty, asset[asset_name], None, None, None, None)
 
-            stg_path = os.path.dirname(os.path.realpath(__file__))
-            file = buyer[0:11]
-            file_name = "./asa{}.txn".format(file)
-            wtf = transaction.write_to_file([bd_unsigned, bf_unsigned, sd_unsigned, sf_unsigned], stg_path + file_name)
-            key = buyer[:10]
-            TRANSACTIONS[f'{key}'] = {
-                "Seller": sell_addr,
-                "Buyer": buyer,
-                "Amount": round(amount/1000000),
-                "Asset amount": "{}, You will get {}".format(qty + _fee_qty, qty),
-                "Fee": "{} Algos + {} {}".format(_fee_qty, flat_fee, asset_name )
-            }
-            if wtf:
-                update.message.reply_text('Trade successfully initiated\nBuyer should proceed to approve the trade.')
-            context.user_data.clear()
-        except Exception as e:
-            return e, update.message.reply_text('Something went wrong.')
+        stg_path = os.path.dirname(os.path.realpath(__file__))
+        file = buyer[0:11]
+        file_name = "./asa{}.txn".format(file)
+        wtf = transaction.write_to_file([bd_unsigned, bf_unsigned, sd_unsigned, sf_unsigned], stg_path + file_name)
+        key = buyer[:10]
+        TRANSACTIONS[f'{key}'] = {
+            "Seller": sell_addr,
+            "Buyer": buyer,
+            "Amount": round(amount/1000000),
+            "Asset amount": "{}, You will get {}".format(qty + _fee_qty, qty),
+            "Fee": "{} Algos + {} {}".format(_fee_qty, flat_fee, asset_name )
+        }
+        if wtf:
+            update.message.reply_text('Trade successfully initiated\nBuyer should proceed to approve the trade.')
+        context.user_data.clear()
+
     else:
         return update.message.reply_text("Asset not found.")
     return ConversationHandler.conversation_timeout
@@ -155,25 +153,25 @@ def complete_trade(update, context):
     seller = TRANSACTIONS["{}".format(key)]['Seller']
     update.message.reply_text("Completing trade...\nbetween:\nSeller - {} and Buyer - {}".format(seller, _address))
     file = _address[:11]
-    try:
-        if _address in ex_file and _address == TRANSACTIONS["{}".format(key)]['Buyer']:
-            rtv = transaction.retrieve_from_file("./asa{}.txn".format(file))
-            grid = transaction.calculate_group_id([rtv[0], rtv[1], rtv[2], rtv[3]])
-            rtv[0].group = grid
-            rtv[1].group = grid
-            rtv[2].group = grid
-            rtv[3].group = grid
 
-            txn1 = rtv[0].sign(sk)
-            txn2 = rtv[1].sign(sk)
-            txn3 = rtv[2].sign(s)
-            txn4 = rtv[3].sign(s)
+    if _address in ex_file and _address == TRANSACTIONS["{}".format(key)]['Buyer']:
+        rtv = transaction.retrieve_from_file("./asa{}.txn".format(file))
+        grid = transaction.calculate_group_id([rtv[0], rtv[1], rtv[2], rtv[3]])
+        rtv[0].group = grid
+        rtv[1].group = grid
+        rtv[2].group = grid
+        rtv[3].group = grid
 
-            tx_id = client.send_transactions([txn1, txn2, txn3, txn4])
-            wait_for_confirmation(update, context, client, tx_id)
-        context.user_data.clear()
-    except Exception as e:
-        return update.message.reply_text("Trade could mot be completed!"), e
+        txn1 = rtv[0].sign(sk)
+        txn2 = rtv[1].sign(sk)
+        txn3 = rtv[2].sign(s)
+        txn4 = rtv[3].sign(s)
+
+        tx_id = client.send_transactions([txn1, txn2, txn3, txn4])
+        wait_for_confirmation(update, context, client, tx_id)
+    else:
+        update.message.reply_text("Trade could not be completed!")
+    context.user_data.clear()
     remove_data(update, context, _address)
     return ConversationHandler.conversation_timeout
 

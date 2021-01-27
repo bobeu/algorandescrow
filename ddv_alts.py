@@ -171,7 +171,7 @@ def dispense(update, context):
     params = client.suggested_params()
     params.flat_fee = True
     note = "Thank you for helping in testing this program".encode('utf-8')
-    optin(update, context)
+    # optin(update, context)
     time.sleep(4)
     # try:
     trxn = transaction.AssetTransferTxn(
